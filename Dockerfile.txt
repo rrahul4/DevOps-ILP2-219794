@@ -1,0 +1,28 @@
+FROM ubuntu:latest
+RUN apt-get update
+RUN apt-get install default-jdk -y
+RUN apt-get install unzip -y
+RUN apt-get install zip -y
+RUN apt-get install -y curl && apt-get install -y wget
+RUN curl -O http://apache.mirrors.ionfish.org/tomcat/tomcat-8/v8.5.28/bin/apache-tomcat-8.5.28-deployer.zip 
+
+RUN unzip apache-tomcat-8.5.28-deployer.zip 
+RUN mv apache-tomcat-8.5.28-deployer.zip tomcat
+RUN groupadd tomcat
+RUN useradd -s /bin/false -g tomcat -d /opt/tomcat tomcat
+ENV JAVA_HOME /usr/lib/jvm/java-8-oracle
+ENV CATALINA_HOME /opt/tomcat
+ENV PATH $PATH:$CATALINA_HOME/bin
+
+RUN rm -rf /opt/tomcat/webapps/examples && \
+rm -rf /opt/tomcat/webapps/docs && \
+rm -rf /opt/tomcat/webapps/ROOT
+
+WORKDIR /opt/tomcat/bin/
+RUN chgrp -R tomcat /opt/tomcat
+RUN chown -R tomcat /opt/tomcat
+RUN chmod -R 777 /opt/tomcat
+COPY /root/docker/index.html apache-tomcat-8.5.28-deployer/opt/tomcat/webapps
+RUN ExecStart=/opt/tomcat/bin/startup.sh
+EXPOSE 8080
+EXPOSE 8081
